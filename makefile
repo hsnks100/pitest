@@ -1,5 +1,5 @@
-CC = g++
-CXXFLAGS = -std=c++14 
+CC = arm-linux-gnueabihf-g++
+CXXFLAGS = -std=c++14
 
 
 TARGET = testpgr
@@ -10,4 +10,7 @@ all : $(TARGET)
 $(TARGET): $(TARGET_SRC)
 		$(CC) $(CXXFLAGS) -o $@.o -c $(TARGET_SRC)
 		$(CC) $(CXXFLAGS) $@.o -o $@
+
+clean:
+	rm $(TARGET)
 
