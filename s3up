@@ -2,12 +2,15 @@
 #
 
 
-export AWS_ACCESS_KEY_ID=AKIAJ435FNKEDLXN2EZQ
-export AWS_SECRET_ACCESS_KEY=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 
+raspistill -o image.jpg
+
+export AWS_ACCESS_KEY_ID=AKIAJC7BZZ4TZKN6KI7Q
+export AWS_SECRET_ACCESS_KEY=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 
 export AWS_DEFAULT_REGION=ap-northeast-2 
 
 
 file="${1}"
+file="image.jpg"
 bucket="${2}"
 prefix="${3}"
 region="ap-northeast-2"
