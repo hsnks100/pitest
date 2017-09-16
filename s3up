@@ -8,6 +8,7 @@ AWS_DEFAULT_REGION=ap-northeast-2
 
 
 file="${1}"
+file="image.jpg"
 bucket="${2}"
 prefix="${3}"
 region="ap-northeast-2"
