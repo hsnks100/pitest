@@ -1,15 +1,13 @@
 #!/bin/bash
 #
+
+
 AWS_ACCESS_KEY_ID=AKIAIVQC5QD4AIXJPASQ
 AWS_SECRET_ACCESS_KEY=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
-
-
 AWS_DEFAULT_REGION=ap-northeast-2 
 
 
-file="${1}"
-bucket="${2}"
-prefix="${3}"
+bucket="varrampi"
 region="ap-northeast-2"
 timestamp=$(date -u "+%Y-%m-%d %H:%M:%S")
 signed_headers="date;host;x-amz-acl;x-amz-content-sha256;x-amz-date"
@@ -68,16 +66,30 @@ canonical_get_request() {
     echo "host"
     printf "UNSIGNED-PAYLOAD" 
 }
-canonical_request_hash() {
-    local output=$(canonical_request | shasum -a 256)
-    echo "${output%% *}"
-}
 
-string_to_sign() {
+GET_string_to_sign() {
     echo "AWS4-HMAC-SHA256"
     echo "${iso_timestamp}"
     echo "${date_scope}/${region}/s3/aws4_request"
-    printf "$(canonical_request_hash)"
+
+    local output=$(canonical_get_request | shasum -a 256)
+    echo "${output%% *}"
+}
+
+PUT_string_to_sign() { 
+    echo "AWS4-HMAC-SHA256"
+    echo "${iso_timestamp}"
+    echo "${date_scope}/${region}/s3/aws4_request"
+    local output=$(canonical_request | shasum -a 256)
+    printf "${output%% *}"
+}
+
+signature_key() {
+    local secret=$(printf "AWS4${AWS_SECRET_ACCESS_KEY?}" | hex_key)
+    local date_key=$(printf ${date_scope} | hmac_sha256 "${secret}" | hex_key)
+    local region_key=$(printf ${region} | hmac_sha256 "${date_key}" | hex_key)
+    local service_key=$(printf "s3" | hmac_sha256 "${region_key}" | hex_key)
+    printf "aws4_request" | hmac_sha256 "${service_key}" | hex_key
 }
 
 hex_key() {
@@ -89,6 +101,33 @@ hmac_sha256() {
     openssl dgst -binary -sha256 -mac HMAC -macopt hexkey:${hexkey}
 }
 
+GET_signature() {
+    GET_string_to_sign | hmac_sha256 $(signature_key) | hex_key | sed "s/^.* //"
+}
+
+signature() {
+    PUT_string_to_sign | hmac_sha256 $(signature_key) | hex_key | sed "s/^.* //"
+}
+PUT() {
+    file=$2
+    prefix=$1
+    curl \
+        -T "${file}" \
+        -H "Authorization: AWS4-HMAC-SHA256 Credential=${AWS_ACCESS_KEY_ID?}/${date_scope}/${region}/s3/aws4_request,SignedHeaders=${signed_headers},Signature=$(signature)" \
+        -H "Date: ${date_header}" \
+        -H "x-amz-acl: public-read" \
+        -H "x-amz-content-sha256: $(payload_hash)" \
+        -H "x-amz-date: ${iso_timestamp}" \
+        "https://${bucket}.s3.amazonaws.com/${prefix}/${file}"
+}
+
+GET() {
+    curl -o newtestacm.pdf "http://${bucket}.s3.amazonaws.com/acm.pdf?${QUERYSTRING}&X-Amz-Signature=${GET_signature}"
+}
+
+
+#GET
+
 signature_key() {
     local secret=$(printf "AWS4${AWS_SECRET_ACCESS_KEY?}" | hex_key)
     local date_key=$(printf ${date_scope} | hmac_sha256 "${secret}" | hex_key)
@@ -97,17 +136,9 @@ signature_key() {
     printf "aws4_request" | hmac_sha256 "${service_key}" | hex_key
 }
 
-signature() {
+PUT_signature() {
     string_to_sign | hmac_sha256 $(signature_key) | hex_key | sed "s/^.* //"
 }
 
-curl \
-    -T "${file}" \
-    -H "Authorization: AWS4-HMAC-SHA256 Credential=${AWS_ACCESS_KEY_ID?}/${date_scope}/${region}/s3/aws4_request,SignedHeaders=${signed_headers},Signature=$(signature)" \
-    -H "Date: ${date_header}" \
-    -H "x-amz-acl: public-read" \
-    -H "x-amz-content-sha256: $(payload_hash)" \
-    -H "x-amz-date: ${iso_timestamp}" \
-    "https://${bucket}.s3.amazonaws.com/${prefix}/${file}"
-
-
+GET
+PUT dir100 main.cpp

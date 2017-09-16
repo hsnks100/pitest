@@ -1,9 +1,6 @@
 #!/bin/bash
 
 
-export AWS_ACCESS_KEY_ID=AKIAJ4WVVYURVFFMXJEQ
-export AWS_SECRET_ACCESS_KEY=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 
-export AWS_DEFAULT_REGION=ap-northeast-2 
 
 export PATH="/usr/local/ssl/bin:$PATH"
 urlEncode() {
@@ -57,14 +54,9 @@ getHexaHash() {
 }
 
 ### Main ###
-if [ -z $AWS_DEFAULT_REGION ] || [ -z $AWS_SECRET_ACCESS_KEY ] || [ -z $AWS_ACCESS_KEY_ID ]
-then
-    echo "Please set $AWS_DEFAULT_REGION, $AWS_SECRET_ACCESS_KEY, and $AWS_ACCESS_KEY_ID environment variables"
-    exit 1
-fi
-SK="$AWS_SECRET_ACCESS_KEY"
-AK="$AWS_ACCESS_KEY_ID"
-REGION="$AWS_DEFAULT_REGION"
+SK="AKIAJ4WVVYURVFFMXJEQ"
+AK="5s4GDS0kxcPXvmk96bsHvH5ZAQO6apfzS8XUfdOg"
+REGION="ap-northeast-2"
 
 echo "using : ./s3up -b varrampi -k acm.pdf -e 60"
 [ $# -ne 6 ] && exit 2
